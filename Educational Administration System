@@ -1,2 +1,47 @@
 # _*_ coding: utf-8 _*_
 #
+
+
+import requests
+from PIL import Image
+import time
+
+def login(url):
+    random = str(int(time.time()*1000)%10000)
+    code = session.get('http://jwts.hitsz.edu.cn/captchaImage?id='+random,headers=headers)
+    with open('D:\captcha.jpg','wb') as f:
+        f.write(code.content)
+        f.close()
+    im = Image.open('D:\captcha.jpg')
+    im.show()
+    im.close()
+
+    data = {
+        'usercode':'SZ160310221',
+        'password':'19980218',
+        'code':input('input captcha:')
+        }
+    s = session.post(url,data=data,headers=headers)
+    return s
+
+def main():
+    url = 'http://jwts.hitsz.edu.cn/login'
+    s = login(url)
+    if '胡韶同学' in s.text:
+        print('login successfully')
+    else:
+        print('fail to login！！！')
+        s = login(url)
+
+
+
+
+# Set headers
+headers = {
+    'Referer':'http://jwts.hitsz.edu.cn/',
+    'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.168 Safari/537.36',
+    'Cookie':'name=value; JSESSIONID=sSrKhfkTH7nmy847pJGp6y2yqpWCqndLPKDpssryHx91D96mbXT1!1045579775'
+    }
+
+session = requests.session()
+main()
