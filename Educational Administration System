@@ -50,7 +50,7 @@ if __name__ == '__main__':
     headers = {
         'Referer':'http://jwts.hitsz.edu.cn/',
         'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.168 Safari/537.36'
-    }
+        }
     
    session = requests.session()
     main()
