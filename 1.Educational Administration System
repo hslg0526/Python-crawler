@@ -3,8 +3,9 @@
 
 
 import requests
-from PIL import Image
+from PIL import Image   # not necessary when 'os' is imported
 import time
+import os
 
 def login(url):
     #get cookies via 'session' method
@@ -26,6 +27,7 @@ def login(url):
         'password':password,
         'code':input('input captcha:')
         }
+    os.system('taskkill /IM Microsoft.Photos.exe /F')
     s = session.post(url,data=data, headers=headers)
     return s
 
