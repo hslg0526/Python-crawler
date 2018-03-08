@@ -36,10 +36,10 @@ def main():
     s = login(url)
     for i in range(5):
         if '切换角色' in s.text:
-            print('login successfully')
+            print('Login successfully')
             break
         else:
-            print('fail to login！！！')
+            print('Failed to login！！！')
             s = login(url)
 
 
