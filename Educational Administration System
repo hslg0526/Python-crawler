@@ -9,11 +9,11 @@ import time
 def login(url):
 
     #get cookies via 'session' method
-    r = session.get('http://jwts.hitsz.edu.cn/')
+    r = session.get('http://jwts.hitsz.edu.cn/', headers=headers)
     
     #get captcha
     random = str(int(time.time()*1000)%10000)
-    code = session.get('http://jwts.hitsz.edu.cn/captchaImage?id='+random)
+    code = session.get('http://jwts.hitsz.edu.cn/captchaImage?id='+random, headers=headers)
     with open('D:\captcha.jpg','wb') as f:
         f.write(code.content)
         f.close()
@@ -23,18 +23,18 @@ def login(url):
     
     #login
     data = {
-        'usercode':'SZ160310221',
-        'password':'19980218',
+        'usercode':Username,
+        'password':password,
         'code':input('input captcha:')
         }
-    s = session.post(url,data=data)
+    s = session.post(url,data=data, headers=headers)
     return s
 
 def main():
     url = 'http://jwts.hitsz.edu.cn/login'
     s = login(url)
     for i in range(5):
-        if '胡韶同学' in s.text:
+        if '切换角色' in s.text:
             print('login successfully')
             break
         else:
