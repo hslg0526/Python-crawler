@@ -2,4 +2,4 @@
 #
 
 
-1. Educational administraction System
+1. Educational Administration System
