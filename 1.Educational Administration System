@@ -1,54 +1,79 @@
-# _*_ coding: utf-8 _*_
+# _*_ Coding: utf-8 _*_
 # @Name: Shawn
-
+# @Time:
+#
 
 import requests
-from PIL import Image   # not necessary when 'os' is imported
+from PIL import Image
 import time
 import os
+from lxml import etree
+
 
 def login(url):
-    #get cookies via 'session' method
-    r = session.get('http://jwts.hitsz.edu.cn/', headers=headers)
-    
-    #get captcha
-    random = str(int(time.time()*1000)%10000)
+    # get cookies via 'session' method
+    session.get('http://jwts.hitsz.edu.cn/', headers=headers)
+
+    # get captcha
+    random = str(int(time.time()*1000) % 10000)
     code = session.get('http://jwts.hitsz.edu.cn/captchaImage?id='+random, headers=headers)
-    with open('D:\captcha.jpg','wb') as f:
+    with open('D:\captcha.jpg', 'wb') as f:
         f.write(code.content)
         f.close()
     im = Image.open('D:\captcha.jpg')
     im.show()
     im.close()
-    
-    #login
+
     data = {
-        'usercode':Username,
-        'password':password,
-        'code':input('input captcha:')
-        }
+        'usercode': usercode,
+        'password': password,
+        'code': input('Input captcha:')
+    }
+
     os.system('taskkill /IM Microsoft.Photos.exe /F')
-    s = session.post(url,data=data, headers=headers)
-    return s
+    s = session.post(url, data=data, headers=headers)
+    #
+    if '切换角色' in s.text:
+        print('Login successfully. :)')
+        # print(s.text[:-1000])
+        return
+    else:
+        print('Failed to login!!!')
+        login(url)
+
+
+def getSchedule():
+    wday = time.localtime().tm_wday
+    url_smst = 'http://jwts.hitsz.edu.cn/kbcx/queryGrkb'
+    url_week = 'http://jwts.hitsz.edu.cn/kbcx/queryXszkb'
+
+    smst_html = session.get(url_smst)
+    smst = etree.HTML(smst_html.text)
+    xnxq = smst.xpath('//select/option[position()= 1]/@value')
+    ndata = {
+        'xnxq': xnxq    # 学期参数
+    }
+    # print(xnxq)
+    week_html = session.post(url_week, data=ndata)
+    # print(week_html.text)
+    week = etree.HTML(week_html.text)
+    sequence = week.xpath('//div[@class="kbtext"]//text()')
+    for i in range(5):
+        n = wday + 7*i
+        print(sequence[n])
+
 
 def main():
     url = 'http://jwts.hitsz.edu.cn/login'
-    s = login(url)
-    for i in range(5):
-        if '切换角色' in s.text:
-            print('Login successfully')
-            break
-        else:
-            print('Failed to login！！！')
-            s = login(url)
+    login(url)
+    getSchedule()
 
 
 if __name__ == '__main__':
-    # Set headers
+    session = requests.session()
     headers = {
-        'Referer':'http://jwts.hitsz.edu.cn/',
-        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.168 Safari/537.36'
-        }
-    
-   session = requests.session()
+        'Referer': 'http://jwts.hitsz.edu.cn/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/53'
+                      '7.36 (KHTML, like Gecko) Chrome/64.0.3282.168 Safari/537.36'
+    }
     main()
