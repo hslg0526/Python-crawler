@@ -78,6 +78,6 @@ class Student:
 
 if __name__ == '__main__':
     session = requests.session()
-    stu = Student('SZ160310221', '19980218')
+    stu = Student(usercode, password)       # Input your username and password
     stu.login()
     stu.getSchedule()
