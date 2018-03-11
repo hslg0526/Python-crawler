@@ -1,8 +1,8 @@
 # _*_ Coding: utf-8 _*_
-# @Time     :2018/3/11 19:56
-# @Author   :Shawn
-# @Project  :Web_crawlers
-# @Software :PyCharm
+# @Time     : 2018/3/11 19:56
+# @Author   : Shawn
+# @Project  : Web_crawlers
+# @Software : PyCharm
 
 import requests
 import time
@@ -67,6 +67,7 @@ class Student:
         week_html = session.post(url_week, headers=self.headers, data=data)
         week = etree.HTML(week_html.text)
         sequence = week.xpath('//div[@class="kbtext"]//text()')
+        
         print('Here`s your schedule:')
         for i in range(5):
             n = wday + 7 * i
