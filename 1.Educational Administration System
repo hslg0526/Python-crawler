@@ -116,9 +116,9 @@ class Student:
         response = session.post(url, headers=self.headers, data=data)
         html = etree.HTML(response.text)
         t = html.xpath('//div[@class="list"]/table/tr[last()]/td/text()')
-        tplt = '{0:{6}<5}\t{1:{6}<6}\t{2:{6}<4}\t{3:{6}<4}\t{4:{6}<4}\t{5:{6}<4}'
+        tplt = '{0:{6}<15}\t{1:{6}<6}\t{2:{6}<6}\t{3:{6}<6}\t{4:{6}<6}\t{5:{6}<6}'
         print(tplt.format('课程', '类别', '学分', '总成绩', '最终成绩', '教学班排名', chr(12288)))
-        print(tplt.format(t[4], t[6], t[7], t[11], t[12], t[15], chr(12288)))
+        print(tplt.format(t[4], t[6], t[7], t[11], t[12], t[13], chr(12288)))
 
 
 if __name__ == '__main__':
