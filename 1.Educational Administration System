@@ -1,8 +1,12 @@
+#!/usr/bin/env python
 # _*_ Coding: utf-8 _*_
 # @Time     : 2018/3/11 19:56
 # @Author   : Shawn
 # @Project  : Web_crawlers
 # @Software : PyCharm
+#
+# Make sure you`ve logged in before you run other method
+#
 
 import requests
 import time
@@ -16,9 +20,11 @@ class Student:
         self.usercode = usercode
         self.password = password
         self.headers = {
+            'Referer': '',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/53'
                           '7.36 (KHTML, like Gecko) Chrome/64.0.3282.168 Safari/537.36'
         }
+        # self.Info = {}
 
     def login(self):
         # Initialization
@@ -26,8 +32,7 @@ class Student:
         self.headers['Referer'] = 'http://jwts.hitsz.edu.cn/'
         data = {
             'usercode': self.usercode,
-            'password': self.password,
-            'code': ''
+            'password': self.password
         }
 
         # get cookies
@@ -37,7 +42,6 @@ class Student:
         code = session.get('http://jwts.hitsz.edu.cn/captchaImage?id=' + random, headers=self.headers)
         with open('D:\captcha.jpg', 'wb') as f:
             f.write(code.content)
-            f.close()
         im = Image.open('D:\captcha.jpg')
         im.show()
         im.close()
@@ -46,14 +50,19 @@ class Student:
         os.system('taskkill /IM Microsoft.Photos.exe /F')
         s = session.post(url, data=data, headers=self.headers)
         if '切换角色' in s.text:
-            print('Login successfully. :)')
+            print('Login successfully. :)\n')
             return
         else:
             print('Failed to login!!!')
-            stu.login()
+            self.login()
 
-    def getSchedule(self):
-        wday = time.localtime().tm_wday
+    def logout(self):
+        url = 'http://jwts.hitsz.edu.cn/logout'
+        self.headers['Referer'] = 'http://jwts.hitsz.edu.cn/login'
+        session.get(url, headers=self.headers)
+        print('Logout.')
+
+    def getSchedule(self, wday=time.localtime().tm_wday):
         url_smst = 'http://jwts.hitsz.edu.cn/kbcx/queryGrkb'
         url_week = 'http://jwts.hitsz.edu.cn/kbcx/queryXszkb'
         self.headers['Referer'] = url_smst
@@ -62,23 +71,64 @@ class Student:
         smst_html = session.get(url_smst)
         smst = etree.HTML(smst_html.text)
         xnxq = smst.xpath('//select/option[position()= 1]/@value')
-        data['xnxq'] = xnxq
+        data['xnxq'] = xnxq     # 学期参数
 
         week_html = session.post(url_week, headers=self.headers, data=data)
         week = etree.HTML(week_html.text)
         sequence = week.xpath('//div[@class="kbtext"]//text()')
-        
-        print('Here`s your schedule:')
+        print('     Here`s your schedule:\n')
         for i in range(5):
             n = wday + 7 * i
             if sequence[n] == '&nbsp':
-                print('_')
+                print('No.%d-%d:\t%s\n' % (2*i+1, 2*i+2, '_'))
             else:
-                print(sequence[n])
+                print('No.%d-%d:\t%s\n' % (2*i+1, 2*i+2, sequence[n]))
+
+    def getScore(self):
+        url = 'http://jwts.hitsz.edu.cn/xfj/queryListXfj'
+        self.headers['Referer'] = 'http://jwts.hitsz.edu.cn/login'
+        response = session.get(url, headers=self.headers)
+        html = etree.HTML(response.text)
+
+        # Get credit_score
+        credit_score = html.xpath('//span/text()')
+        tplt = '{0:{2}<10}\t{1:^}'
+        for i in range(int(len(credit_score)/2)):
+            print(tplt.format(credit_score[2*i], credit_score[2*i+1], chr(12288)))
+
+    def getNew_score(self):
+        url = 'http://jwts.hitsz.edu.cn/cjcx/queryQmcj'
+        self.headers['Referer'] = 'http://jwts.hitsz.edu.cn/cjcx/queryCjpub'
+        r = session.get(url, headers=self.headers)
+        data = {
+            'pageNo': '',
+            'pageSize': '',
+            'pageCount': '',
+            'pageXnxq': '',
+            'pageLb': '',
+            'pageKcmc': ''
+        }
+        r_html = etree.HTML(r.text)
+        pageCount = r_html.xpath('//input[@id="pageCount"]/@value')
+        pageSize = r_html.xpath('//input[@id="pageSize"]/@value')
+        data['pageCount'] = data['pageNo'] = pageCount
+        data['pageSize'] = pageSize
+        response = session.post(url, headers=self.headers, data=data)
+        html = etree.HTML(response.text)
+        t = html.xpath('//div[@class="list"]/table/tr[last()]/td/text()')
+        tplt = '{0:{6}<5}\t{1:{6}<6}\t{2:{6}<4}\t{3:{6}<4}\t{4:{6}<4}\t{5:{6}<4}'
+        print(tplt.format('课程', '类别', '学分', '总成绩', '最终成绩', '教学班排名', chr(12288)))
+        print(tplt.format(t[4], t[6], t[7], t[11], t[12], t[15], chr(12288)))
 
 
 if __name__ == '__main__':
     session = requests.session()
-    stu = Student(usercode, password)       # Input your username and password
+    stu = Student(usercode, password)
     stu.login()
     stu.getSchedule()
+    stu.getScore()
+    stu.logout()
+    stu.getNew_score()
+else:
+    print('Load "Student.py" successfully. :)\nPlease login first')
+    session = requests.session()
